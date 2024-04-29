@@ -4,7 +4,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializer import RegisterSerializer, LoginSerializer, ChangePasswordSerializer
 from rest_framework import status
 
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -29,8 +28,7 @@ class RegisterView(APIView):
             print(e)
             return Response({
                 'data': {},
-                'message': 'Something went wrong!',
-
+                'message': 'Internal Server Error'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -55,7 +53,7 @@ class LoginView(APIView):
             print(e)
             return Response({
                 'data': {},
-                'message': 'Something went wrong!',
+                'message': 'Internal Server Error'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -63,10 +61,21 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        try:
+            serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Password changed successfully."}, status=status.HTTP_200_OK)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'data': {},
+                    "message": "Password changed successfully."
+                }, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print(e)
+            return Response({
+                'data': {},
+                'message': 'Internal Server Error'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
